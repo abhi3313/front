@@ -1,7 +1,7 @@
 
 import React, { useState, useRef } from "react";
 import axios from "axios";
-import SkillDisplay from "./skillDisplay";
+import SkillDisplay from "./SkillDisplay";
 
 const ResumeUploader = () => {
   const [file, setFile] = useState(null);
