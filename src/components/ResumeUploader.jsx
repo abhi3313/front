@@ -53,7 +53,7 @@ const ResumeUploader = () => {
       setSkills([]);
 
       const response = await axios.post(
-        `${process.env.REACT_APP_API_URL}/upload/`, // Using the environment variable for URL
+        "http://backend-production-e16f.up.railway.app/upload/", // Using the environment variable for URL
         formData,
         {
           headers: {
