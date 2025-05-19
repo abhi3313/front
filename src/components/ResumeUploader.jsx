@@ -1,4 +1,3 @@
-
 import React, { useState, useRef } from "react";
 import axios from "axios";
 import SkillDisplay from "./SkillDisplay";
@@ -6,7 +5,7 @@ import SkillDisplay from "./SkillDisplay";
 const ResumeUploader = () => {
   const [file, setFile] = useState(null);
   const [uploadProgress, setUploadProgress] = useState(0);
-  const [skills, setSkills] = useState({});
+  const [skills, setSkills] = useState([]);  // Using array to store skills
   const [loading, setLoading] = useState(false);
   const fileInputRef = useRef(null); 
 
@@ -14,7 +13,7 @@ const ResumeUploader = () => {
     const selectedFile = e.target.files[0];
     if (selectedFile && selectedFile.type === "application/pdf") {
       setFile(selectedFile);
-      setSkills({});
+      setSkills([]);
     } else {
       alert("Only PDF files are allowed.");
     }
@@ -25,7 +24,7 @@ const ResumeUploader = () => {
     const droppedFile = e.dataTransfer.files[0];
     if (droppedFile && droppedFile.type === "application/pdf") {
       setFile(droppedFile);
-      setSkills({});
+      setSkills([]);
     } else {
       alert("Only PDF files are allowed.");
     }
@@ -51,19 +50,24 @@ const ResumeUploader = () => {
     try {
       setLoading(true);
       setUploadProgress(0);
-      setSkills({});
+      setSkills([]);
 
-      const response = await axios.post("http://192.168.92.3:8000/upload/", formData, {
-        headers: {
-          "Content-Type": "multipart/form-data",
-        },
-        onUploadProgress: (progressEvent) => {
-          const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
-          setUploadProgress(percent);
-        },
-      });
+      const response = await axios.post(
+        `${process.env.REACT_APP_API_URL}/upload/`, // Using the environment variable for URL
+        formData,
+        {
+          headers: {
+            "Content-Type": "multipart/form-data",
+          },
+          onUploadProgress: (progressEvent) => {
+            const percent = Math.round((progressEvent.loaded * 100) / progressEvent.total);
+            setUploadProgress(percent);
+          },
+        }
+      );
 
-      setSkills(response.data.skills); 
+      setSkills(response.data.skills || []); // Ensure skills is an array
+
     } catch (error) {
       console.error("Upload error:", error);
       alert("Failed to upload or extract skills.");
@@ -76,7 +80,6 @@ const ResumeUploader = () => {
     <div className="max-w-xl mx-auto mt-10 p-6 border rounded-xl shadow-lg">
       <h2 className="text-2xl font-bold mb-6 text-center">Resume Skill Extractor</h2>
 
-      
       <div
         onClick={handleZoneClick}
         onDrop={handleDrop}
@@ -84,7 +87,7 @@ const ResumeUploader = () => {
         className="border-2 border-dashed border-gray-400 p-8 rounded-lg text-center cursor-pointer hover:bg-gray-100 transition"
       >
         {file ? (
-          <p className="text-green-700 font-semibold"> {file.name}</p>
+          <p className="text-green-700 font-semibold">{file.name}</p>
         ) : (
           <p className="text-gray-600">Click or drag & drop a PDF file here</p>
         )}
@@ -97,7 +100,6 @@ const ResumeUploader = () => {
         />
       </div>
 
-      
       <div className="text-center mt-4">
         <button
           onClick={handleUpload}
@@ -108,7 +110,6 @@ const ResumeUploader = () => {
         </button>
       </div>
 
-    
       {loading && (
         <div className="w-full bg-gray-200 rounded-full h-3 mt-4">
           <div
@@ -117,16 +118,16 @@ const ResumeUploader = () => {
           ></div>
         </div>
       )}
-      
-    <div className="max-w-full mx-auto p-6">
-      {Object.keys(skills).length > 0 && (
-  <SkillDisplay skills={skills} />
-)}
-</div>
-      
+
+      <div className="max-w-full mx-auto p-6">
+        {skills.length > 0 ? (
+          <SkillDisplay skills={skills} />
+        ) : (
+          !loading && <p>No skills extracted yet. Please upload a resume.</p>
+        )}
+      </div>
     </div>
   );
 };
 
 export default ResumeUploader;
-
